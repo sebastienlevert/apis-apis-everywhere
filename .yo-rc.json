@@ -1,0 +1,8 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "version": "1.4.1",
+    "libraryName": "apis-apis-everywhere",
+    "libraryId": "c610248c-f982-442d-874f-317f72fbe1b2",
+    "environment": "spo"
+  }
+}

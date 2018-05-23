@@ -1,0 +1,26 @@
+public addItem(item: IHelpDeskItem): Promise<void> {
+    const currentWebUrl: string = this._webPartContext.pageContext.web.absoluteUrl;
+
+    return new Promise<void>((resolve, reject) => {
+      sp.web.lists.getById(this._listId).items.add({
+        "Title": item.title,
+        "HelpDeskDescription": item.description,
+        "HelpDeskLevel": item.level
+      }).then(() => {
+        resolve();
+      });
+    });
+  }
+
+  public deleteItem(id: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+
+      if (!window.confirm(`Are you sure you want to delete the item with id ${id}?`)) {
+        return;
+      }
+
+      sp.web.lists.getById(this._listId).items.getById(id).delete().then(() => {
+        resolve();
+      });
+    });
+  }
