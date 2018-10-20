@@ -1,4 +1,4 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from "./IDataService";
 
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -12,19 +12,18 @@ export default class PnPJSCoreDataService extends SharePointDataService {
     return "SharePoint REST API (PnP JS Core)";
   }
 
-  public getItems(context: WebPartContext): Promise<IHelpDeskItem[]> {
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
+  public getItems(context: WebPartContext): Promise<ISessionItem[]> {
+    return new Promise<ISessionItem[]>((resolve, reject) => {
 
       sp.web.lists.getById(this._listId).items
-        .select("*", "HelpDeskAssignedTo/Title")
-        .expand("HelpDeskAssignedTo").getAll().then((sessionItems: any[]) => {
-        let helpDeskItems:IHelpDeskItem[] = [];
+        .select("*").getAll().then((sessionItems: any[]) => {
+        let sessions:ISessionItem[] = [];
 
-        for(let helpDeskListItem of sessionItems) {
-          helpDeskItems.push(this.buildHelpDeskItem(helpDeskListItem));
+        for(let sessionItem of sessionItems) {
+          sessions.push(this.buildSessionItem(sessionItem));
         }
 
-        resolve(helpDeskItems);
+        resolve(sessions);
       });
 
     });

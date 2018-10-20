@@ -1,4 +1,4 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from "./IDataService";
 
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -24,27 +24,29 @@ export default class SharePointDataService implements IDataService {
     return Boolean(this._listId);
   }
 
-  public getItems(context: WebPartContext): Promise<IHelpDeskItem[]> {
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
+  public getItems(context: WebPartContext): Promise<ISessionItem[]> {
+    return new Promise<ISessionItem[]>((resolve, reject) => {
       context.spHttpClient
         .get( `${this._webPartContext.pageContext.web.absoluteUrl}/_api/web/lists/GetById('${this._listId}')/items` +
-              `?$select=*,HelpDeskAssignedTo/Title&$expand=HelpDeskAssignedTo`, SPHttpClient.configurations.v1)
+              `?$select=*`, SPHttpClient.configurations.v1)
         .then(res => res.json())
         .then(res => {
-          let helpDeskItems:IHelpDeskItem[] = [];
+          let sessionItems:ISessionItem[] = [];
 
-          for(let helpDeskListItem of res.value) {
-            helpDeskItems.push(this.buildHelpDeskItem(helpDeskListItem));
+          for(let sessionItem of res.value) {
+            sessionItems.push(this.buildSessionItem(sessionItem));
           }
 
-          resolve(helpDeskItems);
+          resolve(sessionItems);
         })
         .catch(err => console.log(err));
     });
   }
 
-  public addItem(item: IHelpDeskItem): Promise<void> {
+  public addItem(item: ISessionItem): Promise<void> {
     const currentWebUrl: string = this._webPartContext.pageContext.web.absoluteUrl;
+
+    console.log(item); 
 
     return new Promise<void>((resolve, reject) => {
       this.getListItemEntityTypeName().then((listItemEntityTypeName: string): Promise<SPHttpClientResponse> => {
@@ -53,8 +55,8 @@ export default class SharePointDataService implements IDataService {
             "type": listItemEntityTypeName
           },
           "Title": item.title,
-          "HelpDeskDescription": item.description,
-          "HelpDeskLevel": item.level
+          "SessionDescription": item.description,
+          "SessionLevel": item.level
         });
 
         return this._webPartContext.spHttpClient.post(`${currentWebUrl}/_api/web/lists/GetById('${this._listId}')/items`,
@@ -71,7 +73,7 @@ export default class SharePointDataService implements IDataService {
       .then((response: SPHttpClientResponse): Promise<any> => {
         return response.json();
       })
-      .then((item: any): void => {
+      .then((newitem: any): void => {
         resolve();
       });
     });
@@ -80,10 +82,6 @@ export default class SharePointDataService implements IDataService {
   public deleteItem(id: number): Promise<void> {
     const currentWebUrl: string = this._webPartContext.pageContext.web.absoluteUrl;
     return new Promise<void>((resolve, reject) => {
-
-    if (!window.confirm(`Are you sure you want to delete the item with id ${id}?`)) {
-      return;
-    }
 
     return this._webPartContext.spHttpClient.post(`${currentWebUrl}/_api/web/lists/GetById('${this._listId}')/items(${id})`,
       SPHttpClient.configurations.v1,
@@ -102,15 +100,12 @@ export default class SharePointDataService implements IDataService {
     });
   }
 
-  protected buildHelpDeskItem(helpDeskListItem: any): IHelpDeskItem {
+  protected buildSessionItem(sessionItem: any): ISessionItem {
     return {
-      id: helpDeskListItem.Id,
-      title: helpDeskListItem.Title,
-      description: helpDeskListItem.HelpDeskDescription,
-      level: helpDeskListItem.HelpDeskLevel,
-      status: helpDeskListItem.HelpDeskStatus,
-      resolution: helpDeskListItem.HelpDeskResolution,
-      assignedTo: helpDeskListItem.HelpDeskAssignedTo ? helpDeskListItem.HelpDeskAssignedTo.Title : null
+      id: sessionItem.Id,
+      title: sessionItem.Title,
+      description: sessionItem.SessionDescription,
+      level: sessionItem.SessionLevel
     };
   }
 

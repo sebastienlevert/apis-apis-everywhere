@@ -6,7 +6,7 @@ import { escape } from "@microsoft/sp-lodash-subset";
 import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
 import { Placeholder } from "@pnp/spfx-controls-react/lib/Placeholder";
 import MockDataService from "./../../../services/MockDataService";
-import { IHelpDeskItem } from "../../../models/IHelpDeskItem";
+import { ISessionItem } from "../../../models/ISessionItem";
 
 import {
   Spinner,
@@ -29,7 +29,7 @@ export default class ListContent extends React.Component<IListContentProps, ILis
     super(props);
 
     this.state = {
-      helpDeskItems: [],
+      sessionItems: [],
       selectedItems: []
     };
 
@@ -69,21 +69,6 @@ export default class ListContent extends React.Component<IListContentProps, ILis
         maxWidth: 50,
         minWidth: 50,
         sorting: true
-      },
-      ,
-      {
-        name: "status",
-        displayName: "Status",
-        maxWidth: 100,
-        minWidth: 100,
-        sorting: true
-      },
-      {
-        name: "assignedTo",
-        displayName: "Assigned To",
-        maxWidth: 100,
-        minWidth: 200,
-        sorting: true
       }
     ];
 
@@ -102,13 +87,13 @@ export default class ListContent extends React.Component<IListContentProps, ILis
             <ListView
               selectionMode={SelectionMode.multiple}
               selection={this._getSelection}
-              items={this.state.helpDeskItems}
+              items={this.state.sessionItems}
               viewFields={viewFields} />
 
             <div>&nbsp;</div>
             <DefaultButton
               onClick={ this._showDialog }
-              text="Create a new Help Desk item"/>
+              text="Create a new Session"/>
 
             <DefaultButton
               disabled={ this.state.selectedItems.length <= 0}
@@ -120,8 +105,8 @@ export default class ListContent extends React.Component<IListContentProps, ILis
               onDismiss={ this._closeDialog }
               dialogContentProps={ {
                 type: DialogType.largeHeader,
-                title: "Create a new Help Desk Item",
-                subText: "Use this form to create a new Help Desk Item"
+                title: "Create a new Session",
+                subText: "Use this form to create a new Session"
               } }
               modalProps={ {
                 isBlocking: true,
@@ -152,21 +137,21 @@ export default class ListContent extends React.Component<IListContentProps, ILis
                     <ChoiceGroup
                       options={ [
                         {
-                          key: "Low",
-                          text: "Low"
+                          key: "100",
+                          text: "100"
                         },
                         {
-                          key: "Medium",
-                          text: "Medium",
+                          key: "200",
+                          text: "200",
                           checked: true
                         },
                         {
-                          key: "High",
-                          text: "High"
+                          key: "300",
+                          text: "300"
                         },
                         {
-                          key: "Critical",
-                          text: "Critical"
+                          key: "400",
+                          text: "400"
                         }
                       ] }
                       onChange={ this._onLevelChanged }
@@ -205,7 +190,7 @@ export default class ListContent extends React.Component<IListContentProps, ILis
 
   public componentDidUpdate(previousProps: IListContentProps, previousState: IListContentState): void {
     if(this._isValid() &&
-      (this.props.list !== previousProps.list || this.props.dataService.getTitle() !== previousProps.dataService.getTitle())) {
+      (previousProps && (this.props.list !== previousProps.list || this.props.dataService.getTitle() !== previousProps.dataService.getTitle()))) {
       this.setState({
         isLoading: true
       });
@@ -223,6 +208,11 @@ export default class ListContent extends React.Component<IListContentProps, ILis
 
   private _deleteSelected = (): void => {
     for(let item of this.state.selectedItems) {
+      
+      if (!window.confirm(`Are you sure you want to delete the item with id ${item.id}?`)) {
+        return;
+      }
+
       this.props.dataService.deleteItem(item.id).then(() => {
         this._getItems();
       });
@@ -243,8 +233,8 @@ export default class ListContent extends React.Component<IListContentProps, ILis
     this.props.context.propertyPane.open();
   }
 
-  private _onLevelChanged(event: any):void {
-    this._itemLevel = event.target.value;
+  private _onLevelChanged(event: any, option: any):void {
+    this._itemLevel = option.key;
   }
 
   private _onTitleChanged(event: any):void {
@@ -256,9 +246,9 @@ export default class ListContent extends React.Component<IListContentProps, ILis
   }
 
   private _getItems(): void {
-    this.props.dataService.getItems(this.props.context).then(helpDeskItems => {
+    this.props.dataService.getItems(this.props.context).then(sessionItems => {
       this.setState({
-        helpDeskItems: helpDeskItems,
+        sessionItems: sessionItems,
         isLoading: false
       });
     });
@@ -266,13 +256,13 @@ export default class ListContent extends React.Component<IListContentProps, ILis
 
   private _addItem(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      let helpDeskItem: IHelpDeskItem = {
+      let sessionItem: ISessionItem = {
         title: this._itemTitle,
         description: this._itemDescription,
         level: this._itemLevel
       };
 
-      this.props.dataService.addItem(helpDeskItem).then(() => {
+      this.props.dataService.addItem(sessionItem).then(() => {
         this._getItems();
         resolve();
       });

@@ -1,0 +1,22 @@
+dependencies:
+  '@pnp/sp': 1.1.2
+packages:
+  /@pnp/sp/1.1.2:
+    dependencies:
+      tslib: 1.9.2
+    dev: false
+    peerDependencies:
+      '@pnp/common': 1.1.2
+      '@pnp/logging': 1.1.2
+      '@pnp/odata': 1.1.2
+    resolution:
+      integrity: sha1-D6XT6QSxmTRKLd6L2ClbPrRkawQ=
+  /tslib/1.9.2:
+    dev: false
+    resolution:
+      integrity: sha1-i+DMmh9tx3J8ON6xbC69GiiSmI4=
+registry: 'https://onedrive.pkgs.visualstudio.com/_packaging/Dev-Kitchen/npm/registry/'
+shrinkwrapMinorVersion: 8
+shrinkwrapVersion: 3
+specifiers:
+  '@pnp/sp': ^1.1.2

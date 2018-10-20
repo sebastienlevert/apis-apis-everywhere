@@ -1,4 +1,4 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from './IDataService';
 
 import { IWebPartContext } from '@microsoft/sp-webpart-base';
@@ -6,10 +6,10 @@ import { SPHttpClient, HttpClientResponse } from '@microsoft/sp-http';
 
 
 export default class SharePointSearchDataService implements IDataService {
-  deleteItem(id: number): Promise<void> {
+  public deleteItem(id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  addItem(item: IHelpDeskItem): Promise<void> {
+  public addItem(item: ISessionItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
   private _webPartContext: IWebPartContext;
@@ -28,12 +28,12 @@ export default class SharePointSearchDataService implements IDataService {
     return Boolean(this._listId);
   }
 
-  public getItems(context: IWebPartContext): Promise<IHelpDeskItem[]> {
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
+  public getItems(context: IWebPartContext): Promise<ISessionItem[]> {
+    return new Promise<ISessionItem[]>((resolve, reject) => {
       context.spHttpClient
         .get(`${this._webPartContext.pageContext.web.absoluteUrl}/_api/search/query?` +
-              `querytext='ContentTypeId:0x010006746609E953604CACB6A08F020BF357* AND ListID:${this._listId}'` +
-              `&selectproperties='ListItemID,Title,HelpDeskDescriptionOWSMTXT,HelpDeskLevelOWSCHCS,HelpDeskStatusOWSCHCS,HelpDeskAssignedToOWSUSER'` +
+              `querytext='ContentTypeId:0x0100A829DCD06F34504690C156727F8AEAFE* AND ListID:${this._listId}'` +
+              `&selectproperties='ListItemID,Title,SessionDescriptionOWSMTXT,SessionLevelOWSCHCS'` +
               `&orderby='ListItemID asc'`, SPHttpClient.configurations.v1, {
           headers: {
             "odata-version": "3.0"
@@ -41,29 +41,26 @@ export default class SharePointSearchDataService implements IDataService {
         })
         .then(res => res.json())
         .then(res => {
-          let helpDeskItems:IHelpDeskItem[] = [];
+          let sessionItems:ISessionItem[] = [];
 
           if(res.PrimaryQueryResult) {
             for(var row of res.PrimaryQueryResult.RelevantResults.Table.Rows) {
-              helpDeskItems.push(this.buildHelpDeskItem(row));
+              sessionItems.push(this.buildSessionItem(row));
             }
           }
 
-          resolve(helpDeskItems);
+          resolve(sessionItems);
         })
         .catch(err => console.log(err));
     });
   }
 
-  protected buildHelpDeskItem(helpDeskSearchRow: any): IHelpDeskItem {
+  protected buildSessionItem(helpDeskSearchRow: any): ISessionItem {
     return {
       id: this.getResultValueByKey('ListItemID', helpDeskSearchRow),
       title: this.getResultValueByKey('Title', helpDeskSearchRow),
-      description: this.getResultValueByKey('HelpDeskDescriptionOWSMTXT', helpDeskSearchRow),
-      level: this.getResultValueByKey("HelpDeskLevelOWSCHCS", helpDeskSearchRow),
-      status: this.getResultValueByKey("HelpDeskStatusOWSCHCS", helpDeskSearchRow),
-      resolution: this.getResultValueByKey("HelpDeskResolutionOWSTEXT", helpDeskSearchRow),
-      assignedTo: this.getResultValueByKey("HelpDeskAssignedToOWSUSER", helpDeskSearchRow) ? this.getResultValueByKey("HelpDeskAssignedToOWSUSER", helpDeskSearchRow).split(" | ")[1] : null
+      description: this.getResultValueByKey('SessionDescriptionOWSMTXT', helpDeskSearchRow),
+      level: this.getResultValueByKey("SessionLevelOWSCHCS", helpDeskSearchRow)
     };
   }
 

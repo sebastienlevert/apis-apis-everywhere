@@ -1,13 +1,13 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from "./IDataService";
 
 import { IWebPartContext } from "@microsoft/sp-webpart-base";
 
 export default class MockDataService implements IDataService {
-  deleteItem(id: number): Promise<void> {
+  public deleteItem(id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  addItem(item: IHelpDeskItem): Promise<void> {
+  public addItem(item: ISessionItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
   private _webPartContext: IWebPartContext;
@@ -26,17 +26,14 @@ export default class MockDataService implements IDataService {
     return true;
   }
 
-  public getItems(context: IWebPartContext): Promise<IHelpDeskItem[]> {
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
+  public getItems(context: IWebPartContext): Promise<ISessionItem[]> {
+    return new Promise<ISessionItem[]>((resolve, reject) => {
       setTimeout(() => resolve([
         {
           id : 1,
-          title : "That doesn't work",
-          description : "When I do that, it doesn't work",
-          level : "Low",
-          status: "Open",
-          resolution: "Do this and it will work!",
-          assignedTo: "Sébastien Levert",
+          title : "Session #1",
+          description : "Awesome session!",
+          level : "100"
         }
       ]), 300);
     });

@@ -1,4 +1,4 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from "./IDataService";
 
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -6,10 +6,10 @@ import { HttpClient } from "@microsoft/sp-http";
 
 export default class CustomDataService implements IDataService {
 
-  deleteItem(id: number): Promise<void> {
+  public deleteItem(id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  addItem(item: IHelpDeskItem): Promise<void> {
+  public addItem(item: ISessionItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
   protected _webPartContext: WebPartContext;
@@ -28,33 +28,30 @@ export default class CustomDataService implements IDataService {
     return Boolean(this._listId);
   }
 
-  public getItems(context: WebPartContext): Promise<IHelpDeskItem[]> {
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
+  public getItems(context: WebPartContext): Promise<ISessionItem[]> {
+    return new Promise<ISessionItem[]>((resolve, reject) => {
       context.httpClient
         .get("https://apis-apis-everywhere.azurewebsites.net/api/GetHelpDeskItems", HttpClient.configurations.v1)
         .then(res => res.json())
         .then(res => {
-          let helpDeskItems:IHelpDeskItem[] = [];
+          let sessionItems:ISessionItem[] = [];
 
-          for(let helpDeskListItem of res) {
-            helpDeskItems.push(this.buildHelpDeskItem(helpDeskListItem));
+          for(let sessionItem of res) {
+            sessionItems.push(this.buildSessionItem(sessionItem));
           }
 
-          resolve(helpDeskItems);
+          resolve(sessionItems);
         })
         .catch(err => console.log(err));
     });
   }
 
-  protected buildHelpDeskItem(helpDeskListItem: any): IHelpDeskItem {
+  protected buildSessionItem(helpDeskListItem: any): ISessionItem {
     return {
       id: helpDeskListItem.Id,
       title: helpDeskListItem.Title,
-      description: helpDeskListItem.HelpDeskDescription,
-      level: helpDeskListItem.HelpDeskLevel,
-      status: helpDeskListItem.HelpDeskStatus,
-      resolution: helpDeskListItem.HelpDeskResolution,
-      assignedTo: helpDeskListItem.HelpDeskAssignedTo
+      description: helpDeskListItem.SessionDescription,
+      level: helpDeskListItem.SessionLevel
     };
   }
 }

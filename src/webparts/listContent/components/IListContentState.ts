@@ -1,7 +1,7 @@
-import { IHelpDeskItem } from './../../../models/IHelpDeskItem';
+import { ISessionItem } from './../../../models/ISessionItem';
 
 export default interface IListContentState {
-  helpDeskItems?: IHelpDeskItem[];
+  sessionItems?: ISessionItem[];
   isLoading?: boolean;
   hideDialog?: boolean;
   selectedItems?: any[];

@@ -11,10 +11,10 @@ import {
 import * as strings from "ListContentWebPartStrings";
 import ListContent from "./components/ListContent";
 import { IListContentProps } from "./components/IListContentProps";
-import MockDataService from "../../../lib/services/MockDataService";
+import MockDataService from "../../services/MockDataService";
 import SharePointDataService from "../../services/SharePointDataService";
 import { PropertyFieldListPicker, PropertyFieldListPickerOrderBy } from "@pnp/spfx-property-controls/lib/PropertyFieldListPicker";
-import IDataService from "../../../lib/services/IDataService";
+import IDataService from "../../services/IDataService";
 import { setup as pnpSetup } from "@pnp/common";
 import PnPJSCoreDataService from "../../services/PnPJSCoreDataService";
 import MicrosoftGraphDataService from "../../services/MicrosoftGraphDataService";

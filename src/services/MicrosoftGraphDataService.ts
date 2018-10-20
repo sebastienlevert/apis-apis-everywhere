@@ -1,8 +1,8 @@
-import { IHelpDeskItem } from "./../models/IHelpDeskItem";
+import { ISessionItem } from "./../models/ISessionItem";
 import IDataService from "./IDataService";
 
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { MSGraphClient } from "@microsoft/sp-client-preview";
+import { MSGraphClient } from "@microsoft/sp-http";
 
 export default class MicrosoftGraphDataService implements IDataService {
 
@@ -12,7 +12,6 @@ export default class MicrosoftGraphDataService implements IDataService {
 
   constructor(webPartContext: WebPartContext, listId: string) {
     this._webPartContext = webPartContext;
-    this._client = this._webPartContext.serviceScope.consume(MSGraphClient.serviceKey);
     this._listId = listId;
   }
 
@@ -24,34 +23,36 @@ export default class MicrosoftGraphDataService implements IDataService {
     return Boolean(this._listId);
   }
 
-  public getItems(context: WebPartContext): Promise<IHelpDeskItem[]> {
+  public getItems(context: WebPartContext): Promise<ISessionItem[]> {
 
     let graphUrl: string =  `https://graph.microsoft.com/v1.0` +
                             `/sites/${this.getCurrentSiteCollectionGraphId()}` +
                             `/lists/${this._listId}` +
                             `/items?expand=fields(${this.getFieldsToExpand()})`;
 
-    return new Promise<IHelpDeskItem[]>((resolve, reject) => {
-      this._client
-        .api(graphUrl)
-        .get((error, response: any) => {
-          if (error) {
-            console.error(error);
-            return;
-          }
+    return new Promise<ISessionItem[]>((resolve, reject) => {
+      this._webPartContext.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
+        client
+          .api(graphUrl)
+          .get((error, response: any) => {
+            if (error) {
+              console.error(error);
+              return;
+            }
 
-          let helpDeskItems:IHelpDeskItem[] = [];
+            let sessionItems:ISessionItem[] = [];
 
-          for(let helpDeskListItem of response.value) {
-            helpDeskItems.push(this.buildHelpDeskItem(helpDeskListItem));
-          }
+            for(let sessionItem of response.value) {
+              sessionItems.push(this.buildSessionItem(sessionItem));
+            }
 
-          resolve(helpDeskItems);
-        });
+            resolve(sessionItems);
+          });
+      });
     });
   }
 
-  public addItem(item: IHelpDeskItem): Promise<void> {
+  public addItem(item: ISessionItem): Promise<void> {
     let graphUrl: string =  `https://graph.microsoft.com/v1.0` +
                             `/sites/${this.getCurrentSiteCollectionGraphId()}` +
                             `/lists/${this._listId}` +
@@ -61,21 +62,23 @@ export default class MicrosoftGraphDataService implements IDataService {
       const body: any = {
         "fields" : {
           "Title": item.title,
-          "HelpDeskDescription": item.description,
-          "HelpDeskLevel": item.level
+          "SessionDescription": item.description,
+          "SessionLevel": item.level
         }
       };
 
-      this._client
-        .api(graphUrl)
-        .post(body, (error, response: any) => {
-          if (error) {
-            console.error(error);
-            return;
-          }
+      this._webPartContext.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
+        client
+          .api(graphUrl)
+          .post(body, (error, response: any) => {
+            if (error) {
+              console.error(error);
+              return;
+            }
 
-          resolve();
+            resolve();
         });
+      });
     });
   }
 
@@ -86,32 +89,31 @@ export default class MicrosoftGraphDataService implements IDataService {
                             `/items/${id}`;
 
     return new Promise<void>((resolve, reject) => {
-      this._client
-        .api(graphUrl)
-        .delete((error, response: any) => {
-          if (error) {
-            console.error(error);
-            return;
-          }
+      this._webPartContext.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
+        client
+          .api(graphUrl)
+          .delete((error, response: any) => {
+            if (error) {
+              console.error(error);
+              return;
+            }
 
-          resolve();
-        });
+            resolve();
+          });
+      });
     });
   }
 
   private getFieldsToExpand(): string {
-    return encodeURIComponent("$select=id,Title,HelpDeskDescription,HelpDeskLevel,HelpDeskStatus,HelpDeskResolution,HelpDeskAssignedTo");
+    return encodeURIComponent("$select=id,Title,SessionDescription,SessionLevel");
   }
 
-  private buildHelpDeskItem(helpDeskGraphItem: any): IHelpDeskItem {
+  private buildSessionItem(sessionGraphItem: any): ISessionItem {
     return {
-      id: helpDeskGraphItem.id,
-      title: helpDeskGraphItem.fields.Title,
-      description: helpDeskGraphItem.fields.HelpDeskDescription,
-      level: helpDeskGraphItem.fields.HelpDeskLevel,
-      status: helpDeskGraphItem.fields.HelpDeskStatus,
-      resolution: helpDeskGraphItem.fields.HelpDeskResolution,
-      assignedTo: helpDeskGraphItem.fields.HelpDeskAssignedTo
+      id: sessionGraphItem.id,
+      title: sessionGraphItem.fields.Title,
+      description: sessionGraphItem.fields.SessionDescription,
+      level: sessionGraphItem.fields.SessionLevel
     };
   }
 
